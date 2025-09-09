@@ -12,4 +12,6 @@ _What Exactly did you change_
 09/09/2025 - 05:40PM 
 Added the Base Repository named, *clonefest_w2*
 
-(02)
+(02)Apoorva
+09/09/2025 - 5:55PM
+Added the folder called "Backend". Contains user code that DOES NOT have authentication. Also contains album code that is UNTESTED.
