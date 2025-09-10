@@ -15,6 +15,9 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
+    db_user = db.query(User).filter(User.email == user.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Emal address already registered")
     
     # I've commented out the password stuff for now, I've yet to understand it
     
@@ -38,8 +41,6 @@ def read_user(user_id:int, db: Session = Depends(get_db)):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
-# CONTROVERSIAL CODE ALERT: depending on requirement you can change user.name != "" to is not None
 
 @user_router.put("/users/{user_id}", response_model=UserResponse)
 def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):

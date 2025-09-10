@@ -29,26 +29,29 @@ def create_album(user_name: str, album: AlbumCreate, db: Session = Depends(get_d
     db.refresh(db_album)
     return db_album
 
-@album_router.get("/{user_name}/albums/", response_model = List[AlbumResponse])
-def read_albums(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+@album_router.get("/{user_id}/albums/", response_model = List[AlbumResponse])
+def read_albums_by_user(user_id: int, skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    albums = db.query(Album).filter(Album.user_id == user_id).offset(skip).limit(limit).all()
+    return albums
+
+@album_router.get("/albums/", response_model = List[AlbumResponse])
+def read_all_albums(user_id: int, skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     albums = db.query(Album).offset(skip).limit(limit).all()
     return albums
 
 @album_router.get("/{user_name}/albums/{album_id}", response_model = AlbumResponse)
-def read_album_by_id(album_id:int, db: Session = Depends(get_db)):
+def read_album_by_id(album_id: int, db: Session = Depends(get_db)):
     album = db.query(Album).filter(Album.id == album_id).first()
     if album is None:
         raise HTTPException(status_code=404, detail="Album not found")
     return album
 
-@album_router.get("/{user_name}/albums/{album_name}", response_model = AlbumResponse)
+@album_router.get("/{user_name}/albums/", response_model = AlbumResponse)
 def read_album(album_name: str, db: Session = Depends(get_db)):
     album = db.query(Album).filter(Album.name == album_name).all()
     if album is None:
         raise HTTPException(status_code=404, detail="Album not found")
     return album
-
-# CONTROVERSIAL CODE ALERT: depending on requirement you can change user.name != "" to is not None
 
 @album_router.put("/{user_name}/albums/{album_id}", response_model=AlbumResponse)
 def update_album(album_id: int, album: AlbumUpdate, db: Session = Depends(get_db)):
