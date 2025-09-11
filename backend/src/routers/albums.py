@@ -72,7 +72,7 @@ def update_album(album_id: int, album: AlbumUpdate, db: Session = Depends(get_db
     return db_album
 
 @album_router.delete("/{user_name}/albums/{album_id}", response_model=AlbumResponse)
-def delete_user(album_id: int, db: Session = Depends(get_db)):
+def delete_album(album_id: int, db: Session = Depends(get_db)):
     db_album = db.query(Album).filter(Album.id == album_id).first()
     if db_album is None:
         raise HTTPException(status_code=404, detail="Album not found")

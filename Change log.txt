@@ -19,3 +19,7 @@ Added the folder called "Backend". Contains user code that DOES NOT have authent
 (03)Apoorva
 10/09/2025 - 8:42PM
 Backend code for album is now tested and working. Added code for image CRUD.
+
+(04)Apoorva
+11/09/2025 - 8:42PM
+Added code to check if image uploaded is an image and the right mimetype.

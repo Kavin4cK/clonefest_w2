@@ -16,11 +16,15 @@ image_router = APIRouter()
 
 @image_router.post("/{user_name}/{album_id}/upload/", response_model=ImageResponse)
 def upload_image(user_name: str, privacy: str, album_id: int,  size: Optional[int] = None, image: UploadFile = File(...), db: Session = Depends(get_db)):
+
+    if utils.check_image_type(image) is False:
+        raise HTTPException(status_code=400, detail="Invalid file type.")
+
     db_img = db.query(Image).filter(Image.name == image.filename).first()
     if db_img is not None:
-        raise HTTPException(status_code=404, detail="Cannot have two images of the same name.")
+        raise HTTPException(status_code=400, detail="Cannot have two images of the same name.")
     if privacy not in utils.image_privacy_list:
-        raise HTTPException(status_code=404, detail="Invalid privacy setting")
+        raise HTTPException(status_code=400, detail="Invalid privacy setting")
     with open(f'./uploads/{image.filename}', "wb") as f:
         f.write(image.file.read())
     img = Img.open(f'./uploads/{image.filename}')
@@ -44,7 +48,7 @@ def upload_image(user_name: str, privacy: str, album_id: int,  size: Optional[in
         width = w,
         height = h
     )
-    
+
     db.add(db_image)
     db.commit()
     db.refresh(db_image)
@@ -84,10 +88,17 @@ def read_image_by_name(image_name: str, db: Session = Depends(get_db)):
 
 # Can't change the image itself, but can rename it and change privacy and size (as a percentage relative to original).
 @image_router.put("/images/{image_id}", response_model=ImageResponse)
-def update_album(image_id: int, image: ImageUpdate, db: Session = Depends(get_db)):
+def update_image(image_id: int, image: ImageUpdate, db: Session = Depends(get_db)):
+
     db_image = db.query(Image).filter(Image.id == image_id).first()
     if db_image is None:
         raise HTTPException(status_code=404, detail="Image not found")
+    
+    name_with_type = utils.compare_type(db_image.name, image.name)
+    if not name_with_type:
+        raise HTTPException(status_code=400, detail="Invalid type suffix.")
+    else:
+        image.name = name_with_type
     
     if image.size_in_percentage is not None:
         db_image.size_in_percentage = image.size_in_percentage
@@ -111,14 +122,11 @@ def update_album(image_id: int, image: ImageUpdate, db: Session = Depends(get_db
     return db_image
 
 @image_router.delete("/images/{image_id}", response_model=ImageResponse)
-def delete_user(image_id: int, db: Session = Depends(get_db)):
+def delete_image(image_id: int, db: Session = Depends(get_db)):
     db_image = db.query(Image).filter(Image.id == image_id).first()
     if db_image is None:
         raise HTTPException(status_code=404, detail="Image not found")
-    with os.scandir("./uploads") as entries:
-        for entry in entries:
-            if entry.name == db_image.name:
-                os.remove(entry)
+    os.remove(f"./uploads/{db_image.name}")
     db.delete(db_image)
     db.commit()
     return db_image
