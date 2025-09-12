@@ -23,3 +23,7 @@ Backend code for album is now tested and working. Added code for image CRUD.
 (04)Apoorva
 11/09/2025 - 8:42PM
 Added code to check if image uploaded is an image and the right mimetype.
+
+(05)Apoorva
+12/09/2025 - 2:02AM
+Added code so that when a user/album is deleted, his images also are.
