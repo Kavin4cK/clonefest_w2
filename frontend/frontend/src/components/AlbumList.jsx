@@ -1,24 +1,22 @@
 // src/components/AlbumList.jsx
 import React, { useState, useEffect } from 'react';
-
 import { getAlbumsForUser } from '../api';
 import './AlbumList.css';
 
-const AlbumList = ({ user }) => {
+// --- Add onAlbumSelect to props ---
+const AlbumList = ({ user, onAlbumSelect }) => { 
     const [albums, setAlbums] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
+        // ... (existing useEffect code is correct from our last fix)
         if (!user) return;
 
         const fetchAlbums = async () => {
             try {
                 setLoading(true);
-                // NOTE: This assumes your backend can fetch albums by username.
-                // You may need to adjust this to use user.id if your API requires it.
-                const albumData = await getAlbumsByUser(user.username);
-                
+                const albumData = await getAlbumsForUser(user.id);
                 setAlbums(albumData);
                 setError('');
             } catch (err) {
@@ -30,9 +28,17 @@ const AlbumList = ({ user }) => {
         };
 
         fetchAlbums();
-    }, [user]); // Refetch when the user changes
+    }, [user]);
 
-    if (loading) return <p>Loading albums...</p>;
+    if (!user) {
+        return (
+             <div className="placeholder">
+                <h2>Select a user to view their albums</h2>
+            </div>
+        )
+    }
+
+    if (loading) return <p className="loading-text">Loading albums...</p>;
     if (error) return <p className="error-text">{error}</p>;
 
     return (
@@ -43,7 +49,8 @@ const AlbumList = ({ user }) => {
             ) : (
                 <div className="album-grid">
                     {albums.map((album) => (
-                        <div key={album.id} className="album-card">
+                        // --- Add onClick handler here ---
+                        <div key={album.id} className="album-card" onClick={() => onAlbumSelect(album)}>
                             <div className="album-thumbnail"></div>
                             <div className="album-info">
                                 <h3>{album.name}</h3>
