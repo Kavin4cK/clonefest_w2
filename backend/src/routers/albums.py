@@ -20,7 +20,7 @@ def create_album(user_name: str, album: AlbumCreate, db: Session = Depends(get_d
     
     user = db.query(User).filter(User.username == user_name).first()
     if user is None:
-        raise HTTPException(status_code=404, detail="Album not found")
+        raise HTTPException(status_code=404, detail="User not found")
     if album.privacy not in utils.album_privacy_list:
         raise HTTPException(status_code=404, detail="Invalid privacy setting")
     db_album = Album(name = album.name, privacy = album.privacy, user_id = user.id)
