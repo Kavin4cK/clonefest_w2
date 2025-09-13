@@ -29,6 +29,18 @@ function App() {
         setUsers([...users, newUser]);
     };
 
+    const MainContent = () => {
+        if (selectedUser) {
+            return <AlbumList user={selectedUser} />;
+        }
+        return (
+            <div className="placeholder">
+                <h2>Select a user to view their albums</h2>
+            </div>
+        );
+    };
+
+
     return (
         <Router>
             <div className="app-container">
@@ -49,15 +61,7 @@ function App() {
                         </div>
                         <div className="main-content">
                             <Routes>
-                                <Route path="/" element={
-                                    selectedUser ? (
-                                        <AlbumList user={selectedUser} />
-                                    ) : (
-                                        <div className="placeholder">
-                                            <h2>Select a user to view their albums</h2>
-                                        </div>
-                                    )
-                                } />
+                                <Route path="/" element={<MainContent />} />
                                 {/* You can add more routes here for specific albums, etc. */}
                             </Routes>
                         </div>
