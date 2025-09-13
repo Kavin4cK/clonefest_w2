@@ -27,7 +27,9 @@ def upload_image(user_name: str, album_id: int, privacy: Optional[str] = None,  
     album_check = db.query(Album).filter(Album.id == album_id).first()
     if album_check is None:
         raise HTTPException(status_code=400, detail="Invalid album ID.")
-
+    
+    if user_check.id != album_check.user_id:
+        raise HTTPException(status_code=400, detail="Album does not belong to user.")
 
     db_img = db.query(Image).filter(Image.name == image.filename).first()
     if db_img is not None:
