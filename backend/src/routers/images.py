@@ -15,16 +15,31 @@ from .. import utils
 image_router = APIRouter()
 
 @image_router.post("/{user_name}/{album_id}/upload/", response_model=ImageResponse)
-def upload_image(user_name: str, privacy: str, album_id: int,  size: Optional[int] = None, image: UploadFile = File(...), db: Session = Depends(get_db)):
+def upload_image(user_name: str, album_id: int, privacy: Optional[str] = None,  size: Optional[int] = None, image: UploadFile = File(...), db: Session = Depends(get_db)):
 
     if utils.check_image_type(image) is False:
         raise HTTPException(status_code=400, detail="Invalid file type.")
 
+    user_check = db.query(User).filter(User.name == user_name).first()
+    if user_check is None:
+        raise HTTPException(status_code=400, detail="Invalid username.")
+
+    album_check = db.query(Album).filter(Album.id == album_id).first()
+    if album_check is None:
+        raise HTTPException(status_code=400, detail="Invalid album ID.")
+    
+    if user_check.id != album_check.user_id:
+        raise HTTPException(status_code=400, detail="Album does not belong to user.")
+
     db_img = db.query(Image).filter(Image.name == image.filename).first()
     if db_img is not None:
         raise HTTPException(status_code=400, detail="Cannot have two images of the same name.")
-    if privacy not in utils.image_privacy_list:
+    
+    if privacy is None:
+        privacy = album_check.privacy
+    elif privacy not in utils.image_privacy_list:
         raise HTTPException(status_code=400, detail="Invalid privacy setting")
+    
     with open(f'./uploads/{image.filename}', "wb") as f:
         f.write(image.file.read())
     img = Img.open(f'./uploads/{image.filename}')
@@ -39,7 +54,7 @@ def upload_image(user_name: str, privacy: str, album_id: int,  size: Optional[in
     db_image = Image(
         name = image.filename,
         album_id = album_id,
-        user_id = 1, #get user id here
+        user_id = user_check.id,
         privacy = privacy,
         mimetype = image.content_type,
         size_in_percentage = size,
