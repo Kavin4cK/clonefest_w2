@@ -17,7 +17,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already registered")
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
-        raise HTTPException(status_code=400, detail="Emal address already registered")
+        raise HTTPException(status_code=400, detail="Email address already registered")
     
     # I've commented out the password stuff for now, I've yet to understand it
     
